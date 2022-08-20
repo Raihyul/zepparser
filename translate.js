@@ -1,17 +1,21 @@
 var fs = require('fs');
+const { getFileContents } = require('./utils/fileManager');
+const AdmZip = require('adm-zip');
+const sharp = require('sharp');
 
 function getJson(content, targetDir) {
-
     let companyTitle = getCompanyName(content);
     let companyContent = getCompanyContent(content);
     let companyYoutubeLink = getYoutubeLink(companyContent);
     let companyDescription = getDescription(companyContent);
     let companyImg = getCompanyImg(companyContent);
+    let ImgDir = getImgDir(companyContent);
 
     let productContent = getProductContent(content);
     let productPromotionVideo = getYoutubeLink(productContent);
     let productDescription = getDescription(productContent);
     let productImg = getProductIgmg(productContent);
+
 
     let isRecruitment = content.includes('## Recruitment');
     let recruitmentJds = [];
@@ -22,7 +26,7 @@ function getJson(content, targetDir) {
         recruitmentContact = getRecruitmentContact(recruimentContent);
     }
     let youtubeThumbnailLink = getYoutubeThumbnail(companyYoutubeLink);
-    let defaultDir = targetDir + '/' + companyImg[0].split('/')[0].replace("%20", " ");
+    let defaultDir = targetDir + '/' + ImgDir.replace("%20", "\ ");
     downloadImgFile(youtubeThumbnailLink, defaultDir + '/thumbnail.png');
 
     let logoPath = getCompanyLogo(content);
@@ -43,7 +47,8 @@ function getJson(content, targetDir) {
         },
         "images": companyImg,
         "logoPath": logoPath,
-        "youtubeThumbnailPath": companyImg[0].split('/')[0] + '/thumbnail.png',
+        "youtubeThumbnailPath": '/thumbnail.png',
+        "prevImgDir": ImgDir,
     }
     return JSON.stringify(json_result);
 }
@@ -52,6 +57,52 @@ function getCompanyName(content) {
     const regex = /(?<=^# )[a-zA-Z]+/gm;
     let match = regex.exec(content);
     return match[0];
+}
+
+function getImgDir(content) {
+    const regex = /!\[(.*?)\]\((.*?)\)/gms;
+
+    let result;
+    let m;
+
+    while ((m = regex.exec(content)) !== null) {
+        // This is necessary to avoid infinite loops with zero-width matches
+        if (m.index === regex.lastIndex) {
+            regex.lastIndex++;
+        }
+
+        // The result can be accessed through the `m`-variable.
+        m.forEach((match, groupIndex) => {
+            if (groupIndex == 2) {
+                result = match.split('/')[0];
+            }
+        });
+    }
+    return result;
+
+}
+
+
+function getCompanyLogo(content) {
+    const regex = /!\[(.*?)\]\((.*?)\)/gms;
+
+    let result;
+    let m;
+
+    while ((m = regex.exec(content)) !== null) {
+        // This is necessary to avoid infinite loops with zero-width matches
+        if (m.index === regex.lastIndex) {
+            regex.lastIndex++;
+        }
+
+        // The result can be accessed through the `m`-variable.
+        m.forEach((match, groupIndex) => {
+            if (groupIndex == 2) {
+                result = match.split('/')[0];
+            }
+        });
+    }
+    return result;
 }
 
 function getYoutubeLink(content) {
@@ -100,7 +151,7 @@ function getProductIgmg(content) {
         // The result can be accessed through the `m`-variable.
         m.forEach((match, groupIndex) => {
             if (groupIndex == 2) {
-                result.push(match);
+                result.push(match.split('/')[1]);
             }
         });
     }
@@ -126,7 +177,6 @@ function getRecruitmentJds(content) {
 
         return line.split('|').slice(1, -1);
     });
-    console.log(parse_result);
     let result = parse_result.map(line => {
         return {
             "title": line[0].trim(),
@@ -163,7 +213,7 @@ function getCompanyImg(content) {
         // The result can be accessed through the `m`-variable.
         m.forEach((match, groupIndex) => {
             if (groupIndex == 2) {
-                result.push(match);
+                result.push(match.split('/')[1]);
             }
         });
     }
@@ -173,7 +223,7 @@ function getCompanyImg(content) {
 
 
 function getCompanyLogo(content) {
-    const regex = /!\[(.*?)\]\((.*?)\)/gms;
+    const regex = /(?<=## BI\/CI)(.*?)!\[(.*?)\]\((.*?)\)/gms;
 
     let result;
     let m;
@@ -212,20 +262,232 @@ function downloadImgFile(link, fileName) {
             console.log('exec error: ' + error);
         }
     });
+}
 
+const targetDir = './result'
+const fileContents = getFileContents('./zep2.zip', targetDir);
+k = JSON.parse(getJson(fileContents, targetDir));
+console.log(k);
+
+const mainJSscript = `
+
+const companyImg = {
+
+  floor: {
+
+    pos: { x: 17, y: 11 },
+
+    dir: ${JSON.stringify(k["logoPath"])},
+
+  },
+
+  wallLeft: {
+
+    pos: { x: 6, y: 1 },
+
+    dir: ${JSON.stringify(k["images"][0])},
+
+  },
+
+  wallRight: {
+
+    pos: { x: 34, y: 1 },
+
+    dir: ${JSON.stringify(k["images"][1])},
+
+  },
+
+};
+
+
+
+function generateImgObj(loc) {
+
+  return App.loadSpritesheet(companyImg[loc].dir);
 
 }
-const AdmZip = require('adm-zip');
-const fileName = "./Export-15a220e5-9f32-4501-9456-2320c3d9d915.zip";
-const zip = new AdmZip(fileName);
-const targetDir = './result';
-zip.extractAllTo(targetDir, true);
-const files = fs.readdirSync(targetDir);
-let fileContents;
-files.forEach(file => {
-    if (file.endsWith('.md')) {
-        fileContents = fs.readFileSync(`${targetDir}/${file}`, 'utf8');
+
+
+
+function attachImgObjToMap(loc) {
+
+  Map.putObject(
+
+    companyImg[loc].pos.x,
+
+    companyImg[loc].pos.y,
+
+    generateImgObj(loc),
+
+    {
+
+      overlap: true,
+
     }
-})
-k = getJson(fileContents, targetDir)
-console.log(k)
+
+  );
+
+}
+
+
+
+function customPopupEffect(x, y, effectType, link) {
+
+  Map.putTileEffect(x, y, effectType, {
+
+    link: link,
+
+    align2: "popup",
+
+    triggerByTouch: true,
+
+  });
+
+}
+
+
+
+function customWebProtalEffect(x, y, effectType, link) {
+
+  Map.putTileEffect(x, y, effectType, {
+
+    link: link,
+
+    invisible: false,
+
+  });
+
+}
+
+
+
+// 최초의 사용자가 입장했을 때만 실행되도록
+
+let tileEffectOn = false;
+
+
+
+App.onJoinPlayer.Add(function (player) {
+
+  // 해당하는 모든 플레이어가 이 이벤트를 통해 App에 입장
+
+
+
+  // 기업 이미지들 맵에 부착
+
+  attachImgObjToMap("floor");
+
+  attachImgObjToMap("wallLeft");
+
+  attachImgObjToMap("wallRight");
+
+  // attachImgObjToMap("youtube");
+
+
+
+  if (!tileEffectOn) {
+
+    tileEffectOn = true;
+
+
+
+    // 채용 공고 (pop up)
+
+    customPopupEffect(
+
+      11,
+
+      8,
+
+      TileEffectType.EMBED,
+
+      "https://careers.supercat.co.kr/home"
+
+    );
+
+    // 회사 유튜브 영상 (pop up)
+
+    customPopupEffect(
+
+      25,
+
+      8,
+
+      TileEffectType.EMBED,
+
+      "https://youtu.be/MMnn78lBs9Y"
+
+    );
+
+    // 회사 홈페이지 (새 창, 상호작용 필수)
+
+    customWebProtalEffect(39, 8, TileEffectType.WEB_PORTAL, "https://zep.us/");
+
+  }
+
+});
+
+`;
+
+
+
+
+
+const companyName = "Zep"
+
+const dir = `./${companyName}`;
+!fs.existsSync(dir) && fs.mkdirSync(dir);
+
+
+fs.writeFile(dir + "/main.js", mainJSscript, function (err) {
+    if (err) throw err;
+    console.log("Saved!");
+});
+
+const img_path = './result/' + k["prevImgDir"].replace("%20", "\\ ");
+console.log(img_path)
+
+
+var exec = require('child_process').exec,
+    child;
+const call = `mv ${img_path}/* ${dir}`;
+
+child = exec(call, function (error, stdout, stderr) {
+    if (error !== null) {
+        console.log('exec error: ' + error);
+    }
+});
+
+const fileList = fs.readdirSync(dir);
+fileList.map(
+    (file) => {
+        if (file.includes('.png') || file.includes('.jpg')) {
+            var exec = require('child_process').exec,
+                child;
+            const call2 = `python resize.py -f ${companyName + "/" + file}`;
+            console.log(call2)
+            child = exec(call2, function (error, stdout, stderr) {
+                console.log(stdout);
+                if (error !== null) {
+                    console.log('exec error: ' + error);
+                }
+            });
+        }
+
+    }
+)
+
+
+
+setTimeout(function () {
+    var exec = require('child_process').exec,
+        child;
+    const call3 = `cd ${companyName}; zip ${companyName}.zip *.png *.jpg main.js`;
+
+    child = exec(call3, function (error, stdout, stderr) {
+        console.log(stdout);
+        if (error !== null) {
+            console.log('exec error: ' + error);
+        }
+    });
+}, 5000);
