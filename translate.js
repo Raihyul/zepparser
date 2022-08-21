@@ -47,7 +47,7 @@ function getJson(content, targetDir) {
         },
         "images": companyImg,
         "logoPath": logoPath,
-        "youtubeThumbnailPath": '/thumbnail.png',
+        "youtubeThumbnailPath": 'thumbnail.png',
         "prevImgDir": ImgDir,
     }
     return JSON.stringify(json_result);
@@ -265,175 +265,133 @@ function downloadImgFile(link, fileName) {
 }
 
 const targetDir = './result'
-const fileContents = getFileContents('./zep2.zip', targetDir);
+const fileName = process.argv[2];
+const companyName = process.argv[3];
+const fileContents = getFileContents(fileName, targetDir);
 k = JSON.parse(getJson(fileContents, targetDir));
 console.log(k);
 
 const mainJSscript = `
-
 const companyImg = {
-
-  floor: {
-
-    pos: { x: 17, y: 11 },
-
-    dir: ${JSON.stringify(k["logoPath"])},
-
-  },
-
-  wallLeft: {
-
-    pos: { x: 6, y: 1 },
-
-    dir: ${JSON.stringify(k["images"][0])},
-
-  },
-
-  wallRight: {
-
-    pos: { x: 34, y: 1 },
-
-    dir: ${JSON.stringify(k["images"][1])},
-
-  },
-
-};
-
-
-
-function generateImgObj(loc) {
-
-  return App.loadSpritesheet(companyImg[loc].dir);
-
-}
-
-
-
-function attachImgObjToMap(loc) {
-
-  Map.putObject(
-
-    companyImg[loc].pos.x,
-
-    companyImg[loc].pos.y,
-
-    generateImgObj(loc),
-
-    {
-
-      overlap: true,
-
+    floor: {
+      pos: { x: 17, y: 11 },
+      dir: ${JSON.stringify(k["logoPath"])},
+    },
+    wallLeft: {
+      pos: { x: 6, y: 1 },
+      dir: ${JSON.stringify(k["images"][0])},
+    },
+    wallRight: {
+      pos: { x: 34, y: 1 },
+      dir: ${JSON.stringify(k["images"][1])},
+    },
+    youtube: {
+        pos: {x: 20, y: 1},
+        dir: ${JSON.stringify(k["youtubeThumbnailPath"])}
     }
+  };
 
-  );
-
-}
-
-
-
-function customPopupEffect(x, y, effectType, link) {
-
-  Map.putTileEffect(x, y, effectType, {
-
-    link: link,
-
-    align2: "popup",
-
-    triggerByTouch: true,
-
-  });
-
-}
-
-
-
-function customWebProtalEffect(x, y, effectType, link) {
-
-  Map.putTileEffect(x, y, effectType, {
-
-    link: link,
-
-    invisible: false,
-
-  });
-
-}
-
-
-
-// 최초의 사용자가 입장했을 때만 실행되도록
-
-let tileEffectOn = false;
-
-
-
-App.onJoinPlayer.Add(function (player) {
-
-  // 해당하는 모든 플레이어가 이 이벤트를 통해 App에 입장
-
-
-
-  // 기업 이미지들 맵에 부착
-
-  attachImgObjToMap("floor");
-
-  attachImgObjToMap("wallLeft");
-
-  attachImgObjToMap("wallRight");
-
-  // attachImgObjToMap("youtube");
-
-
-
-  if (!tileEffectOn) {
-
-    tileEffectOn = true;
-
-
-
-    // 채용 공고 (pop up)
-
-    customPopupEffect(
-
-      11,
-
-      8,
-
-      TileEffectType.EMBED,
-
-      "https://careers.supercat.co.kr/home"
-
+  function generateImgObj(loc) {
+    return App.loadSpritesheet(companyImg[loc].dir);
+  }
+  
+  function attachImgObjToMap(loc) {
+    Map.putObject(
+      companyImg[loc].pos.x,
+      companyImg[loc].pos.y,
+      generateImgObj(loc),
+      {
+        overlap: true,
+      }
     );
-
-    // 회사 유튜브 영상 (pop up)
-
-    customPopupEffect(
-
-      25,
-
-      8,
-
-      TileEffectType.EMBED,
-
-      "https://youtu.be/MMnn78lBs9Y"
-
-    );
-
-    // 회사 홈페이지 (새 창, 상호작용 필수)
-
-    customWebProtalEffect(39, 8, TileEffectType.WEB_PORTAL, "https://zep.us/");
-
+  }
+  
+  function customPopupEffect(x, y, effectType, link) {
+    Map.putTileEffect(x, y, effectType, {
+      link: link,
+      align2: "popup",
+      triggerByTouch: true,
+    });
+  }
+  
+  function customWebProtalEffect(x, y, effectType, link) {
+    Map.putTileEffect(x, y, effectType, {
+      link: link,
+      invisible: true,
+    });
+  }
+  
+  function loadImg(src) {
+    return App.loadSpritesheet(src);
+  }
+  
+  function attachImg(x, y, loadedImg) {
+    Map.putObject(x, y, loadedImg, { overlap: true });
+  }
+  
+  function removeImg(x, y) {
+    Map.putObject(x, y, null, { overlap: true });
+  }
+  
+  function customMessageBubble(x, y, region, message) {
+    App.addOnLocationTouched(region, function (player) {
+      attachImg(x, y, message);
+      setTimeout(function () {
+        return removeImg(x, y);
+      }, 5000);
+    });
   }
 
-});
 
-`;
+  const bubble1 = loadImg("bubble_hello.png");
+const bubble2 = loadImg("bubble_npc.png");
+const managerContact = loadImg("managerContact.png");
+// 최초의 사용자가 입장했을 때만 실행되도록
+let tileEffectOn = false;
+
+App.onJoinPlayer.Add(function (player) {
+    // 해당하는 모든 플레이어가 이 이벤트를 통해 App에 입장
+  
+    // 기업 이미지들 맵에 부착
+    attachImgObjToMap("floor");
+    attachImgObjToMap("wallLeft");
+    attachImgObjToMap("wallRight");
+    attachImgObjToMap("youtube");
+  
+    if (!tileEffectOn) {
+      tileEffectOn = true;
+      for (let y in [11, 13, 15]) {
+        customWebProtalEffect(
+          8,
+          y,
+          TileEffectType.WEB_PORTAL,
+          "https://docs.google.com/forms/d/e/1FAIpQLSctsTGYwL9xu-uFg55jSuVPCTwK-3zZTU_70ZAwHPbu8dIINg/viewform"
+        );
+      }
+  
+      customPopupEffect(
+        11,
+        8,
+        TileEffectType.EMBED,
+        "https://careers.supercat.co.kr/home"
+      );
+      // 회사 유튜브 영상 (pop up)
+      customPopupEffect(
+        25,
+        8,
+        TileEffectType.EMBED,
+        "https://youtu.be/MMnn78lBs9Y"
+      );
+      // 회사 홈페이지 (새 창, 상호작용 필수)
+      customWebProtalEffect(39, 8, TileEffectType.WEB_PORTAL, "https://zep.us");
+    }
+    customMessageBubble(32, 19, "helloBot", bubble1);
+    customMessageBubble(3, 6, "npc", bubble2);
+    customMessageBubble(3, 13, "managerContact", managerContact);
+  });
+`
 
 
-
-
-
-const companyName = "Zep"
 
 const dir = `./${companyName}`;
 !fs.existsSync(dir) && fs.mkdirSync(dir);
@@ -476,6 +434,17 @@ fileList.map(
 
     }
 )
+setTimeout(function () {
+    var exec = require('child_process').exec,
+        child;
+    const call3 = `cp bubble_hello.png bubble_npc.png managerContact.png ./${companyName}`;
+
+    child = exec(call3, function (error, stdout, stderr) {
+        if (error !== null) {
+            console.log('exec error: ' + error);
+        }
+    });
+}, 8000);
 
 
 
@@ -490,4 +459,4 @@ setTimeout(function () {
             console.log('exec error: ' + error);
         }
     });
-}, 5000);
+}, 12000);
