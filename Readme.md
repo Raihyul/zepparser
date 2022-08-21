@@ -30,3 +30,14 @@ Type : Normal
 MapURL : [https://zep.us/edit/6pWd2m/2mYMZn](https://zep.us/edit/6pWd2m/2mYMZn)
 
 DemoURL : [https://zep.us/play/2mYMZn](https://zep.us/play/2mYMZn)
+
+
+## Preview
+
+### Before
+
+![https://cdn.discordapp.com/attachments/1008613384780005436/1010730765404880896/2022-08-21_11.03.05.png](https://cdn.discordapp.com/attachments/1008613384780005436/1010730765404880896/2022-08-21_11.03.05.png)
+
+### After
+
+![https://cdn.discordapp.com/attachments/1008366769221681267/1010749911379214447/unknown.png](https://cdn.discordapp.com/attachments/1008366769221681267/1010749911379214447/unknown.png)
