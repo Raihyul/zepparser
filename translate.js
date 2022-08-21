@@ -50,6 +50,7 @@ function getJson(content, targetDir) {
         "youtubeThumbnailPath": 'thumbnail.png',
         "prevImgDir": ImgDir,
     }
+    console.log(JSON.stringify(json_result))
     return JSON.stringify(json_result);
 }
 
@@ -60,6 +61,7 @@ function getCompanyName(content) {
 }
 
 function getImgDir(content) {
+    console.log(content);
     const regex = /!\[(.*?)\]\((.*?)\)/gms;
 
     let result;
@@ -360,14 +362,15 @@ App.onJoinPlayer.Add(function (player) {
   
     if (!tileEffectOn) {
       tileEffectOn = true;
-      for (let y in [11, 13, 15]) {
-        customWebProtalEffect(
-          8,
-          y,
-          TileEffectType.WEB_PORTAL,
-          "https://docs.google.com/forms/d/e/1FAIpQLSctsTGYwL9xu-uFg55jSuVPCTwK-3zZTU_70ZAwHPbu8dIINg/viewform"
-        );
-      }
+      customWebProtalEffect(8, 11, TileEffectType.WEB_PORTAL,
+        "https://docs.google.com/forms/d/e/1FAIpQLSctsTGYwL9xu-uFg55jSuVPCTwK-3zZTU_70ZAwHPbu8dIINg/viewform"
+    );
+    customWebProtalEffect(8, 13, TileEffectType.WEB_PORTAL,
+        "https://docs.google.com/forms/d/e/1FAIpQLSctsTGYwL9xu-uFg55jSuVPCTwK-3zZTU_70ZAwHPbu8dIINg/viewform"
+    );
+    customWebProtalEffect(8, 15, TileEffectType.WEB_PORTAL,
+        "https://docs.google.com/forms/d/e/1FAIpQLSctsTGYwL9xu-uFg55jSuVPCTwK-3zZTU_70ZAwHPbu8dIINg/viewform"
+    );
   
       customPopupEffect(
         11,
@@ -380,7 +383,7 @@ App.onJoinPlayer.Add(function (player) {
         25,
         8,
         TileEffectType.EMBED,
-        "https://youtu.be/MMnn78lBs9Y"
+        ${JSON.stringify(k["product"]["promotionVideo"])},
       );
       // 회사 홈페이지 (새 창, 상호작용 필수)
       customWebProtalEffect(39, 8, TileEffectType.WEB_PORTAL, "https://zep.us");
@@ -416,9 +419,10 @@ child = exec(call, function (error, stdout, stderr) {
     }
 });
 
-const fileList = fs.readdirSync(dir);
-fileList.map(
-    (file) => {
+setTimeout(function () {
+    const fileList = fs.readdirSync(dir);
+    for (let i = 0; i < fileList.length; i++) {
+        const file = fileList[i];
         if (file.includes('.png') || file.includes('.jpg')) {
             var exec = require('child_process').exec,
                 child;
@@ -431,9 +435,10 @@ fileList.map(
                 }
             });
         }
-
     }
-)
+
+}, 5000);
+
 setTimeout(function () {
     var exec = require('child_process').exec,
         child;
@@ -444,7 +449,7 @@ setTimeout(function () {
             console.log('exec error: ' + error);
         }
     });
-}, 8000);
+}, 10000);
 
 
 
@@ -459,4 +464,4 @@ setTimeout(function () {
             console.log('exec error: ' + error);
         }
     });
-}, 12000);
+}, 15000);

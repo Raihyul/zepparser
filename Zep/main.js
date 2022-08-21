@@ -87,14 +87,15 @@ App.onJoinPlayer.Add(function (player) {
   
     if (!tileEffectOn) {
       tileEffectOn = true;
-      for (let y in [11, 13, 15]) {
-        customWebProtalEffect(
-          8,
-          y,
-          TileEffectType.WEB_PORTAL,
-          "https://docs.google.com/forms/d/e/1FAIpQLSctsTGYwL9xu-uFg55jSuVPCTwK-3zZTU_70ZAwHPbu8dIINg/viewform"
-        );
-      }
+      customWebProtalEffect(8, 11, TileEffectType.WEB_PORTAL,
+        "https://docs.google.com/forms/d/e/1FAIpQLSctsTGYwL9xu-uFg55jSuVPCTwK-3zZTU_70ZAwHPbu8dIINg/viewform"
+    );
+    customWebProtalEffect(8, 13, TileEffectType.WEB_PORTAL,
+        "https://docs.google.com/forms/d/e/1FAIpQLSctsTGYwL9xu-uFg55jSuVPCTwK-3zZTU_70ZAwHPbu8dIINg/viewform"
+    );
+    customWebProtalEffect(8, 15, TileEffectType.WEB_PORTAL,
+        "https://docs.google.com/forms/d/e/1FAIpQLSctsTGYwL9xu-uFg55jSuVPCTwK-3zZTU_70ZAwHPbu8dIINg/viewform"
+    );
   
       customPopupEffect(
         11,
@@ -107,7 +108,7 @@ App.onJoinPlayer.Add(function (player) {
         25,
         8,
         TileEffectType.EMBED,
-        "https://youtu.be/MMnn78lBs9Y"
+        "https://www.youtube.com/watch?v=Y0qwEHXwKoY",
       );
       // 회사 홈페이지 (새 창, 상호작용 필수)
       customWebProtalEffect(39, 8, TileEffectType.WEB_PORTAL, "https://zep.us");
